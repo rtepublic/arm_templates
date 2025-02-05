@@ -4,7 +4,6 @@
 param resourcePrefix string = resourceGroup().name
 
 // Variables
-var containerName = 'azureml'
 var location = resourceGroup().location
 var name = resourcePrefix
 var userPrincipalId = az.deployer().objectId
@@ -257,7 +256,7 @@ resource roleAzureMLComputeOperatorScalt 'Microsoft.Authorization/roleAssignment
   properties: {
     roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'e503ece1-11d0-4e8e-8e2c-7a6c3bf38815')
     principalId: userPrincipalId
-    principalType: 'ServicePrincipal'
+    principalType: 'User'
   }
 }
 

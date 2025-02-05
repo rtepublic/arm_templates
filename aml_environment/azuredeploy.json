@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.33.93.31351",
-      "templateHash": "4925921017420213653"
+      "templateHash": "9296867027385134249"
     }
   },
   "parameters": {
@@ -13,14 +13,13 @@
       "type": "string",
       "defaultValue": "[resourceGroup().name]",
       "minLength": 4,
-      "maxLength": 21,
+      "maxLength": 15,
       "metadata": {
         "description": "The string all resources will be prefixed with."
       }
     }
   },
   "variables": {
-    "containerName": "azureml",
     "location": "[resourceGroup().location]",
     "name": "[parameters('resourcePrefix')]",
     "userPrincipalId": "[deployer().objectId]"
@@ -56,47 +55,6 @@
         "supportsHttpsTrafficOnly": true,
         "allowSharedKeyAccess": false
       }
-    },
-    {
-      "type": "Microsoft.Storage/storageAccounts",
-      "apiVersion": "2023-05-01",
-      "name": "[toLower(format('{0}dsa', variables('name')))]",
-      "location": "[variables('location')]",
-      "sku": {
-        "name": "Premium_LRS"
-      },
-      "kind": "StorageV2",
-      "properties": {
-        "encryption": {
-          "services": {
-            "blob": {
-              "enabled": true
-            },
-            "file": {
-              "enabled": true
-            }
-          },
-          "keySource": "Microsoft.Storage"
-        },
-        "supportsHttpsTrafficOnly": true,
-        "allowSharedKeyAccess": false
-      }
-    },
-    {
-      "type": "Microsoft.Storage/storageAccounts/blobServices",
-      "apiVersion": "2023-05-01",
-      "name": "[format('{0}/{1}', toLower(format('{0}dsa', variables('name'))), 'default')]",
-      "dependsOn": [
-        "[resourceId('Microsoft.Storage/storageAccounts', toLower(format('{0}dsa', variables('name'))))]"
-      ]
-    },
-    {
-      "type": "Microsoft.Storage/storageAccounts/blobServices/containers",
-      "apiVersion": "2023-05-01",
-      "name": "[format('{0}/{1}/{2}', toLower(format('{0}dsa', variables('name'))), 'default', variables('containerName'))]",
-      "dependsOn": [
-        "[resourceId('Microsoft.Storage/storageAccounts/blobServices', toLower(format('{0}dsa', variables('name'))), 'default')]"
-      ]
     },
     {
       "type": "Microsoft.KeyVault/vaults",
@@ -175,9 +133,39 @@
       "type": "Microsoft.Authorization/roleAssignments",
       "apiVersion": "2022-04-01",
       "scope": "[format('Microsoft.MachineLearningServices/workspaces/{0}', format('{0}ws', variables('name')))]",
-      "name": "[guid(resourceId('Microsoft.MachineLearningServices/workspaces', format('{0}ws', variables('name'))), 'Workspace Contributor - UAMI')]",
+      "name": "[guid(resourceId('Microsoft.MachineLearningServices/workspaces', format('{0}ws', variables('name'))), 'Contributor - UAMI')]",
       "properties": {
         "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'b24988ac-6180-42a0-ab88-20f7382dd24c')]",
+        "principalId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('{0}id', variables('name'))), '2023-07-31-preview').principalId]",
+        "principalType": "ServicePrincipal"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.MachineLearningServices/workspaces', format('{0}ws', variables('name')))]",
+        "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('{0}id', variables('name')))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Authorization/roleAssignments",
+      "apiVersion": "2022-04-01",
+      "scope": "[format('Microsoft.MachineLearningServices/workspaces/{0}', format('{0}ws', variables('name')))]",
+      "name": "[guid(resourceId('Microsoft.MachineLearningServices/workspaces', format('{0}ws', variables('name'))), 'AzureML Compute Operator - UAMI')]",
+      "properties": {
+        "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'e503ece1-11d0-4e8e-8e2c-7a6c3bf38815')]",
+        "principalId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('{0}id', variables('name'))), '2023-07-31-preview').principalId]",
+        "principalType": "ServicePrincipal"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.MachineLearningServices/workspaces', format('{0}ws', variables('name')))]",
+        "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('{0}id', variables('name')))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Authorization/roleAssignments",
+      "apiVersion": "2022-04-01",
+      "scope": "[format('Microsoft.MachineLearningServices/workspaces/{0}', format('{0}ws', variables('name')))]",
+      "name": "[guid(resourceId('Microsoft.MachineLearningServices/workspaces', format('{0}ws', variables('name'))), 'AzureML Data Scientist - UAMI')]",
+      "properties": {
+        "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'f6c7c914-8db3-469d-8ca1-694a8f32e121')]",
         "principalId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('{0}id', variables('name'))), '2023-07-31-preview').principalId]",
         "principalType": "ServicePrincipal"
       },
@@ -309,36 +297,6 @@
     {
       "type": "Microsoft.Authorization/roleAssignments",
       "apiVersion": "2022-04-01",
-      "scope": "[format('Microsoft.Storage/storageAccounts/{0}', toLower(format('{0}dsa', variables('name'))))]",
-      "name": "[guid(resourceId('Microsoft.Storage/storageAccounts', toLower(format('{0}dsa', variables('name')))), 'Storage Account Contributor - UAMI')]",
-      "properties": {
-        "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '17d1049b-9a84-46fb-8f53-869881c3d3ab')]",
-        "principalId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('{0}id', variables('name'))), '2023-07-31-preview').principalId]",
-        "principalType": "ServicePrincipal"
-      },
-      "dependsOn": [
-        "[resourceId('Microsoft.Storage/storageAccounts', toLower(format('{0}dsa', variables('name'))))]",
-        "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('{0}id', variables('name')))]"
-      ]
-    },
-    {
-      "type": "Microsoft.Authorization/roleAssignments",
-      "apiVersion": "2022-04-01",
-      "scope": "[format('Microsoft.Storage/storageAccounts/{0}', toLower(format('{0}dsa', variables('name'))))]",
-      "name": "[guid(resourceId('Microsoft.Storage/storageAccounts', toLower(format('{0}dsa', variables('name')))), 'Storage Blob Data Contributor - UAMI')]",
-      "properties": {
-        "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'ba92f5b4-2d11-453d-a403-e96b0029c9fe')]",
-        "principalId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('{0}id', variables('name'))), '2023-07-31-preview').principalId]",
-        "principalType": "ServicePrincipal"
-      },
-      "dependsOn": [
-        "[resourceId('Microsoft.Storage/storageAccounts', toLower(format('{0}dsa', variables('name'))))]",
-        "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('{0}id', variables('name')))]"
-      ]
-    },
-    {
-      "type": "Microsoft.Authorization/roleAssignments",
-      "apiVersion": "2022-04-01",
       "scope": "[format('Microsoft.OperationalInsights/workspaces/{0}', format('{0}law', variables('name')))]",
       "name": "[guid(resourceId('Microsoft.OperationalInsights/workspaces', format('{0}law', variables('name'))), 'Log Analytics Contributor - UAMI')]",
       "properties": {
@@ -355,9 +313,37 @@
       "type": "Microsoft.Authorization/roleAssignments",
       "apiVersion": "2022-04-01",
       "scope": "[format('Microsoft.MachineLearningServices/workspaces/{0}', format('{0}ws', variables('name')))]",
-      "name": "[guid(resourceId('Microsoft.MachineLearningServices/workspaces', format('{0}ws', variables('name'))), 'Workspace Contributor - Sc-alt')]",
+      "name": "[guid(resourceId('Microsoft.MachineLearningServices/workspaces', format('{0}ws', variables('name'))), 'Contributor - Sc-alt')]",
       "properties": {
         "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'b24988ac-6180-42a0-ab88-20f7382dd24c')]",
+        "principalId": "[variables('userPrincipalId')]",
+        "principalType": "User"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.MachineLearningServices/workspaces', format('{0}ws', variables('name')))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Authorization/roleAssignments",
+      "apiVersion": "2022-04-01",
+      "scope": "[format('Microsoft.MachineLearningServices/workspaces/{0}', format('{0}ws', variables('name')))]",
+      "name": "[guid(resourceId('Microsoft.MachineLearningServices/workspaces', format('{0}ws', variables('name'))), 'AzureML Compute Operator - Sc-alt')]",
+      "properties": {
+        "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'e503ece1-11d0-4e8e-8e2c-7a6c3bf38815')]",
+        "principalId": "[variables('userPrincipalId')]",
+        "principalType": "User"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.MachineLearningServices/workspaces', format('{0}ws', variables('name')))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Authorization/roleAssignments",
+      "apiVersion": "2022-04-01",
+      "scope": "[format('Microsoft.MachineLearningServices/workspaces/{0}', format('{0}ws', variables('name')))]",
+      "name": "[guid(resourceId('Microsoft.MachineLearningServices/workspaces', format('{0}ws', variables('name'))), 'AzureML Data Scientist - Sc-alt')]",
+      "properties": {
+        "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'f6c7c914-8db3-469d-8ca1-694a8f32e121')]",
         "principalId": "[variables('userPrincipalId')]",
         "principalType": "User"
       },
@@ -475,34 +461,6 @@
       },
       "dependsOn": [
         "[resourceId('Microsoft.Storage/storageAccounts', toLower(format('{0}sa', variables('name'))))]"
-      ]
-    },
-    {
-      "type": "Microsoft.Authorization/roleAssignments",
-      "apiVersion": "2022-04-01",
-      "scope": "[format('Microsoft.Storage/storageAccounts/{0}', toLower(format('{0}dsa', variables('name'))))]",
-      "name": "[guid(resourceId('Microsoft.Storage/storageAccounts', toLower(format('{0}dsa', variables('name')))), 'Storage Account Contributor - Sc-alt')]",
-      "properties": {
-        "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '17d1049b-9a84-46fb-8f53-869881c3d3ab')]",
-        "principalId": "[variables('userPrincipalId')]",
-        "principalType": "User"
-      },
-      "dependsOn": [
-        "[resourceId('Microsoft.Storage/storageAccounts', toLower(format('{0}dsa', variables('name'))))]"
-      ]
-    },
-    {
-      "type": "Microsoft.Authorization/roleAssignments",
-      "apiVersion": "2022-04-01",
-      "scope": "[format('Microsoft.Storage/storageAccounts/{0}', toLower(format('{0}dsa', variables('name'))))]",
-      "name": "[guid(resourceId('Microsoft.Storage/storageAccounts', toLower(format('{0}dsa', variables('name')))), 'Storage Blob Data Contributor - Sc-alt')]",
-      "properties": {
-        "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'ba92f5b4-2d11-453d-a403-e96b0029c9fe')]",
-        "principalId": "[variables('userPrincipalId')]",
-        "principalType": "User"
-      },
-      "dependsOn": [
-        "[resourceId('Microsoft.Storage/storageAccounts', toLower(format('{0}dsa', variables('name'))))]"
       ]
     },
     {
