@@ -47,6 +47,7 @@ resource keyVault 'Microsoft.KeyVault/vaults@2024-04-01-preview' = {
       name: 'standard'
     }
     enableSoftDelete: false
+    enableRbacAuthorization: true
     accessPolicies: []
   }
 }
