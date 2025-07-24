@@ -46,17 +46,17 @@ resource vnet 'Microsoft.Network/virtualNetworks@2023-11-01' = {
 }
 
 // Reference to the private endpoints subnet
-resource privateEndpointSubnet 'Microsoft.Network/virtualNetworks/subnets@2023-11-01' existing = {
+resource privateEndpointSubnet 'Microsoft.Network/virtualNetworks/subnets@2024-07-01' existing = {
   parent: vnet
   name: 'private-endpoints-subnet'
 }
 
-resource userAssignedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-07-31-preview' = {
+resource userAssignedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2025-01-31-preview' = {
   name: '${name}id'
   location: location
 }
 
-resource storageAccount 'Microsoft.Storage/storageAccounts@2023-05-01' = {
+resource storageAccount 'Microsoft.Storage/storageAccounts@2025-01-01' = {
   name: toLower('${name}sa')
   location: location
   sku: {
@@ -163,33 +163,33 @@ resource mlWorkspace 'Microsoft.MachineLearningServices/workspaces@2024-07-01-pr
 // Private DNS Zones
 // -------------------
 
-resource keyVaultPrivateDnsZone 'Microsoft.Network/privateDnsZones@2020-06-01' = {
+resource keyVaultPrivateDnsZone 'Microsoft.Network/privateDnsZones@2024-06-01' = {
   name: 'privatelink.vaultcore.azure.net'
   location: 'global'
 }
 
-resource acrPrivateDnsZone 'Microsoft.Network/privateDnsZones@2020-06-01' = {
+resource acrPrivateDnsZone 'Microsoft.Network/privateDnsZones@2024-06-01' = {
   name: 'privatelink.azurecr.io'
   location: 'global'
 }
 
-resource amlPrivateDnsZone 'Microsoft.Network/privateDnsZones@2020-06-01' = {
+resource amlPrivateDnsZone 'Microsoft.Network/privateDnsZones@2024-06-01' = {
   name: 'privatelink.api.azureml.ms'
   location: 'global'
 }
 
-resource amlNotebooksPrivateDnsZone 'Microsoft.Network/privateDnsZones@2020-06-01' = {
+resource amlNotebooksPrivateDnsZone 'Microsoft.Network/privateDnsZones@2024-06-01' = {
   name: 'privatelink.notebooks.azure.net'
   location: 'global'
 }
 
-resource storagePrivateDnsZoneBlob 'Microsoft.Network/privateDnsZones@2020-06-01' = {
-  name: 'privatelink.blob.core.windows.net'
+resource storagePrivateDnsZoneBlob 'Microsoft.Network/privateDnsZones@2024-06-01' = {
+  name: 'privatelink.blob.${environment().suffixes.storage}'
   location: 'global'
 }
 
-resource storagePrivateDnsZoneFile 'Microsoft.Network/privateDnsZones@2020-06-01' = {
-  name: 'privatelink.file.core.windows.net'
+resource storagePrivateDnsZoneFile 'Microsoft.Network/privateDnsZones@2024-06-01' = {
+  name: 'privatelink.file.${environment().suffixes.storage}'
   location: 'global'
 }
 
@@ -197,10 +197,16 @@ resource storagePrivateDnsZoneFile 'Microsoft.Network/privateDnsZones@2020-06-01
 // Private DNS Zone Virtual Network Links
 // -------------------
 
-resource keyVaultPrivateDnsZoneVnetLink 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2020-06-01' = {
-  parent: keyVaultPrivateDnsZone
+resource keyVaultPrivateDnsZoneVnetLink 'Microsoft.Network/privateDnsZones@2024-06-01' = {
   name: '${name}kv-vnet-link'
   location: 'global'
+  properties: {}
+}
+
+resource keyVaultToVirtualNetwork 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2024-06-01' = {
+  parent: keyVaultPrivateDnsZone
+  name: 'link_to_${toLower(vnet.name)}'
+  location: 'global'
   properties: {
     registrationEnabled: false
     virtualNetwork: {
@@ -209,10 +215,16 @@ resource keyVaultPrivateDnsZoneVnetLink 'Microsoft.Network/privateDnsZones/virtu
   }
 }
 
-resource acrPrivateDnsZoneVnetLink 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2020-06-01' = {
-  parent: acrPrivateDnsZone
+resource acrPrivateDnsZoneVnetLink 'Microsoft.Network/privateDnsZones@2024-06-01' = {
   name: '${name}acr-vnet-link'
   location: 'global'
+  properties: {}
+}
+
+resource acrToVirtualNetwork 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2024-06-01' = {
+  parent: acrPrivateDnsZoneVnetLink
+  name: 'link_to_${toLower(vnet.name)}'
+  location: 'global'
   properties: {
     registrationEnabled: false
     virtualNetwork: {
@@ -221,10 +233,16 @@ resource acrPrivateDnsZoneVnetLink 'Microsoft.Network/privateDnsZones/virtualNet
   }
 }
 
-resource amlPrivateDnsZoneVnetLink 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2020-06-01' = {
-  parent: amlPrivateDnsZone
+resource amlPrivateDnsZoneVnetLink 'Microsoft.Network/privateDnsZones@2024-06-01' = {
   name: '${name}aml-vnet-link'
   location: 'global'
+  properties: {}
+}
+
+resource amlToVirtualNetwork 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2024-06-01' = {
+  parent: amlPrivateDnsZoneVnetLink
+  name: 'link_to_${toLower(vnet.name)}'
+  location: 'global'
   properties: {
     registrationEnabled: false
     virtualNetwork: {
@@ -233,21 +251,16 @@ resource amlPrivateDnsZoneVnetLink 'Microsoft.Network/privateDnsZones/virtualNet
   }
 }
 
-resource amlNotebooksPrivateDnsZoneVnetLink 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2020-06-01' = {
-  parent: amlNotebooksPrivateDnsZone
+
+resource amlNotebooksPrivateDnsZoneVnetLink 'Microsoft.Network/privateDnsZones@2024-06-01' = {
   name: '${name}aml-notebooks-vnet-link'
   location: 'global'
-  properties: {
-    registrationEnabled: false
-    virtualNetwork: {
-      id: vnet.id
-    }
-  }
+  properties: {}
 }
 
-resource storagePrivateDnsZoneBlobVnetLink 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2020-06-01' = {
-  parent: storagePrivateDnsZoneBlob
-  name: '${name}storage-blob-vnet-link'
+resource amlNotebooksToVirtualNetwork 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2024-06-01' = {
+  parent: amlNotebooksPrivateDnsZoneVnetLink
+  name: 'link_to_${toLower(vnet.name)}'
   location: 'global'
   properties: {
     registrationEnabled: false
@@ -257,9 +270,33 @@ resource storagePrivateDnsZoneBlobVnetLink 'Microsoft.Network/privateDnsZones/vi
   }
 }
 
-resource storagePrivateDnsZoneFileVnetLink 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2020-06-01' = {
-  parent: storagePrivateDnsZoneFile
+resource storagePrivateDnsZoneBlobVnetLink 'Microsoft.Network/privateDnsZones@2024-06-01' = {
+  name: '${name}storage-blob-vnet-link'
+  location: 'global'
+  properties: {}
+}
+
+resource blobStorageToVirtualNetwork 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2024-06-01' = {
+  parent: storagePrivateDnsZoneBlobVnetLink
+  name: 'link_to_${toLower(vnet.name)}'
+  location: 'global'
+  properties: {
+    registrationEnabled: false
+    virtualNetwork: {
+      id: vnet.id
+    }
+  }
+}
+
+resource storagePrivateDnsZoneFileVnetLink 'Microsoft.Network/privateDnsZones@2024-06-01' = {
   name: '${name}storage-file-vnet-link'
+  location: 'global'
+  properties: {}
+}
+
+resource fileStorageToVirtualNetwork 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2024-06-01' = {
+  parent: storagePrivateDnsZoneFileVnetLink
+  name: 'link_to_${toLower(vnet.name)}'
   location: 'global'
   properties: {
     registrationEnabled: false
@@ -273,7 +310,7 @@ resource storagePrivateDnsZoneFileVnetLink 'Microsoft.Network/privateDnsZones/vi
 // Private Endpoints
 // -------------------
 
-resource keyVaultPrivateEndpoint 'Microsoft.Network/privateEndpoints@2023-11-01' = {
+resource keyVaultPrivateEndpoint 'Microsoft.Network/privateEndpoints@2024-07-01' = {
   name: '${name}kv-pe'
   location: location
   properties: {
@@ -294,7 +331,7 @@ resource keyVaultPrivateEndpoint 'Microsoft.Network/privateEndpoints@2023-11-01'
   }
 }
 
-resource acrPrivateEndpoint 'Microsoft.Network/privateEndpoints@2023-11-01' = {
+resource acrPrivateEndpoint 'Microsoft.Network/privateEndpoints@2024-07-01' = {
   name: '${name}acr-pe'
   location: location
   properties: {
@@ -315,7 +352,7 @@ resource acrPrivateEndpoint 'Microsoft.Network/privateEndpoints@2023-11-01' = {
   }
 }
 
-resource amlPrivateEndpoint 'Microsoft.Network/privateEndpoints@2023-11-01' = {
+resource amlPrivateEndpoint 'Microsoft.Network/privateEndpoints@2024-07-01' = {
   name: '${name}aml-pe'
   location: location
   dependsOn: [
@@ -342,7 +379,7 @@ resource amlPrivateEndpoint 'Microsoft.Network/privateEndpoints@2023-11-01' = {
   }
 }
 
-resource storagePrivateEndpointBlob 'Microsoft.Network/privateEndpoints@2023-11-01' = {
+resource storagePrivateEndpointBlob 'Microsoft.Network/privateEndpoints@2024-07-01' = {
   name: '${name}storage-blob-pe'
   location: location
   properties: {
@@ -363,7 +400,7 @@ resource storagePrivateEndpointBlob 'Microsoft.Network/privateEndpoints@2023-11-
   }
 }
 
-resource storagePrivateEndpointFile 'Microsoft.Network/privateEndpoints@2023-11-01' = {
+resource storagePrivateEndpointFile 'Microsoft.Network/privateEndpoints@2024-07-01' = {
   name: '${name}storage-file-pe'
   location: location
   properties: {
@@ -388,7 +425,7 @@ resource storagePrivateEndpointFile 'Microsoft.Network/privateEndpoints@2023-11-
 // Private DNS Zone Groups
 // -------------------
 
-resource keyVaultPrivateEndpointDnsGroup 'Microsoft.Network/privateEndpoints/privateDnsZoneGroups@2023-11-01' = {
+resource keyVaultPrivateEndpointDnsGroup 'Microsoft.Network/privateEndpoints/privateDnsZoneGroups@2024-07-01' = {
   parent: keyVaultPrivateEndpoint
   name: 'default'
   properties: {
@@ -403,7 +440,7 @@ resource keyVaultPrivateEndpointDnsGroup 'Microsoft.Network/privateEndpoints/pri
   }
 }
 
-resource acrPrivateEndpointDnsGroup 'Microsoft.Network/privateEndpoints/privateDnsZoneGroups@2023-11-01' = {
+resource acrPrivateEndpointDnsGroup 'Microsoft.Network/privateEndpoints/privateDnsZoneGroups@2024-07-01' = {
   parent: acrPrivateEndpoint
   name: 'default'
   properties: {
@@ -418,7 +455,7 @@ resource acrPrivateEndpointDnsGroup 'Microsoft.Network/privateEndpoints/privateD
   }
 }
 
-resource amlPrivateEndpointDnsGroup 'Microsoft.Network/privateEndpoints/privateDnsZoneGroups@2023-11-01' = {
+resource amlPrivateEndpointDnsGroup 'Microsoft.Network/privateEndpoints/privateDnsZoneGroups@2024-07-01' = {
   parent: amlPrivateEndpoint
   name: 'default'
   properties: {
@@ -439,7 +476,7 @@ resource amlPrivateEndpointDnsGroup 'Microsoft.Network/privateEndpoints/privateD
   }
 }
 
-resource storagePrivateEndpointBlobDnsGroup 'Microsoft.Network/privateEndpoints/privateDnsZoneGroups@2023-11-01' = {
+resource storagePrivateEndpointBlobDnsGroup 'Microsoft.Network/privateEndpoints/privateDnsZoneGroups@2024-07-01' = {
   parent: storagePrivateEndpointBlob
   name: 'default'
   properties: {
@@ -454,7 +491,7 @@ resource storagePrivateEndpointBlobDnsGroup 'Microsoft.Network/privateEndpoints/
   }
 }
 
-resource storagePrivateEndpointFileDnsGroup 'Microsoft.Network/privateEndpoints/privateDnsZoneGroups@2023-11-01' = {
+resource storagePrivateEndpointFileDnsGroup 'Microsoft.Network/privateEndpoints/privateDnsZoneGroups@2024-07-01' = {
   parent: storagePrivateEndpointFile
   name: 'default'
   properties: {

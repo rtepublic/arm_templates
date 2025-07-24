@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.36.177.2456",
-      "templateHash": "278861882786447006"
+      "templateHash": "15114177427480832125"
     }
   },
   "parameters": {
@@ -62,13 +62,13 @@
     },
     {
       "type": "Microsoft.ManagedIdentity/userAssignedIdentities",
-      "apiVersion": "2023-07-31-preview",
+      "apiVersion": "2025-01-31-preview",
       "name": "[format('{0}id', variables('name'))]",
       "location": "[variables('location')]"
     },
     {
       "type": "Microsoft.Storage/storageAccounts",
-      "apiVersion": "2023-05-01",
+      "apiVersion": "2025-01-01",
       "name": "[toLower(format('{0}sa', variables('name')))]",
       "location": "[variables('location')]",
       "sku": {
@@ -180,44 +180,51 @@
     },
     {
       "type": "Microsoft.Network/privateDnsZones",
-      "apiVersion": "2020-06-01",
+      "apiVersion": "2024-06-01",
       "name": "privatelink.vaultcore.azure.net",
       "location": "global"
     },
     {
       "type": "Microsoft.Network/privateDnsZones",
-      "apiVersion": "2020-06-01",
+      "apiVersion": "2024-06-01",
       "name": "privatelink.azurecr.io",
       "location": "global"
     },
     {
       "type": "Microsoft.Network/privateDnsZones",
-      "apiVersion": "2020-06-01",
+      "apiVersion": "2024-06-01",
       "name": "privatelink.api.azureml.ms",
       "location": "global"
     },
     {
       "type": "Microsoft.Network/privateDnsZones",
-      "apiVersion": "2020-06-01",
+      "apiVersion": "2024-06-01",
       "name": "privatelink.notebooks.azure.net",
       "location": "global"
     },
     {
       "type": "Microsoft.Network/privateDnsZones",
-      "apiVersion": "2020-06-01",
-      "name": "privatelink.blob.core.windows.net",
+      "apiVersion": "2024-06-01",
+      "name": "[format('privatelink.blob.{0}', environment().suffixes.storage)]",
       "location": "global"
     },
     {
       "type": "Microsoft.Network/privateDnsZones",
-      "apiVersion": "2020-06-01",
-      "name": "privatelink.file.core.windows.net",
+      "apiVersion": "2024-06-01",
+      "name": "[format('privatelink.file.{0}', environment().suffixes.storage)]",
       "location": "global"
     },
     {
+      "type": "Microsoft.Network/privateDnsZones",
+      "apiVersion": "2024-06-01",
+      "name": "[format('{0}kv-vnet-link', variables('name'))]",
+      "location": "global",
+      "properties": {}
+    },
+    {
       "type": "Microsoft.Network/privateDnsZones/virtualNetworkLinks",
-      "apiVersion": "2020-06-01",
-      "name": "[format('{0}/{1}', 'privatelink.vaultcore.azure.net', format('{0}kv-vnet-link', variables('name')))]",
+      "apiVersion": "2024-06-01",
+      "name": "[format('{0}/{1}', 'privatelink.vaultcore.azure.net', format('link_to_{0}', toLower(format('{0}vnet', variables('name')))))]",
       "location": "global",
       "properties": {
         "registrationEnabled": false,
@@ -231,9 +238,16 @@
       ]
     },
     {
+      "type": "Microsoft.Network/privateDnsZones",
+      "apiVersion": "2024-06-01",
+      "name": "[format('{0}acr-vnet-link', variables('name'))]",
+      "location": "global",
+      "properties": {}
+    },
+    {
       "type": "Microsoft.Network/privateDnsZones/virtualNetworkLinks",
-      "apiVersion": "2020-06-01",
-      "name": "[format('{0}/{1}', 'privatelink.azurecr.io', format('{0}acr-vnet-link', variables('name')))]",
+      "apiVersion": "2024-06-01",
+      "name": "[format('{0}/{1}', format('{0}acr-vnet-link', variables('name')), format('link_to_{0}', toLower(format('{0}vnet', variables('name')))))]",
       "location": "global",
       "properties": {
         "registrationEnabled": false,
@@ -242,14 +256,21 @@
         }
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Network/privateDnsZones', 'privatelink.azurecr.io')]",
+        "[resourceId('Microsoft.Network/privateDnsZones', format('{0}acr-vnet-link', variables('name')))]",
         "[resourceId('Microsoft.Network/virtualNetworks', format('{0}vnet', variables('name')))]"
       ]
     },
     {
+      "type": "Microsoft.Network/privateDnsZones",
+      "apiVersion": "2024-06-01",
+      "name": "[format('{0}aml-vnet-link', variables('name'))]",
+      "location": "global",
+      "properties": {}
+    },
+    {
       "type": "Microsoft.Network/privateDnsZones/virtualNetworkLinks",
-      "apiVersion": "2020-06-01",
-      "name": "[format('{0}/{1}', 'privatelink.api.azureml.ms', format('{0}aml-vnet-link', variables('name')))]",
+      "apiVersion": "2024-06-01",
+      "name": "[format('{0}/{1}', format('{0}aml-vnet-link', variables('name')), format('link_to_{0}', toLower(format('{0}vnet', variables('name')))))]",
       "location": "global",
       "properties": {
         "registrationEnabled": false,
@@ -258,14 +279,21 @@
         }
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Network/privateDnsZones', 'privatelink.api.azureml.ms')]",
+        "[resourceId('Microsoft.Network/privateDnsZones', format('{0}aml-vnet-link', variables('name')))]",
         "[resourceId('Microsoft.Network/virtualNetworks', format('{0}vnet', variables('name')))]"
       ]
     },
     {
+      "type": "Microsoft.Network/privateDnsZones",
+      "apiVersion": "2024-06-01",
+      "name": "[format('{0}aml-notebooks-vnet-link', variables('name'))]",
+      "location": "global",
+      "properties": {}
+    },
+    {
       "type": "Microsoft.Network/privateDnsZones/virtualNetworkLinks",
-      "apiVersion": "2020-06-01",
-      "name": "[format('{0}/{1}', 'privatelink.notebooks.azure.net', format('{0}aml-notebooks-vnet-link', variables('name')))]",
+      "apiVersion": "2024-06-01",
+      "name": "[format('{0}/{1}', format('{0}aml-notebooks-vnet-link', variables('name')), format('link_to_{0}', toLower(format('{0}vnet', variables('name')))))]",
       "location": "global",
       "properties": {
         "registrationEnabled": false,
@@ -274,14 +302,21 @@
         }
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Network/privateDnsZones', 'privatelink.notebooks.azure.net')]",
+        "[resourceId('Microsoft.Network/privateDnsZones', format('{0}aml-notebooks-vnet-link', variables('name')))]",
         "[resourceId('Microsoft.Network/virtualNetworks', format('{0}vnet', variables('name')))]"
       ]
     },
     {
+      "type": "Microsoft.Network/privateDnsZones",
+      "apiVersion": "2024-06-01",
+      "name": "[format('{0}storage-blob-vnet-link', variables('name'))]",
+      "location": "global",
+      "properties": {}
+    },
+    {
       "type": "Microsoft.Network/privateDnsZones/virtualNetworkLinks",
-      "apiVersion": "2020-06-01",
-      "name": "[format('{0}/{1}', 'privatelink.blob.core.windows.net', format('{0}storage-blob-vnet-link', variables('name')))]",
+      "apiVersion": "2024-06-01",
+      "name": "[format('{0}/{1}', format('{0}storage-blob-vnet-link', variables('name')), format('link_to_{0}', toLower(format('{0}vnet', variables('name')))))]",
       "location": "global",
       "properties": {
         "registrationEnabled": false,
@@ -290,14 +325,21 @@
         }
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Network/privateDnsZones', 'privatelink.blob.core.windows.net')]",
+        "[resourceId('Microsoft.Network/privateDnsZones', format('{0}storage-blob-vnet-link', variables('name')))]",
         "[resourceId('Microsoft.Network/virtualNetworks', format('{0}vnet', variables('name')))]"
       ]
     },
     {
+      "type": "Microsoft.Network/privateDnsZones",
+      "apiVersion": "2024-06-01",
+      "name": "[format('{0}storage-file-vnet-link', variables('name'))]",
+      "location": "global",
+      "properties": {}
+    },
+    {
       "type": "Microsoft.Network/privateDnsZones/virtualNetworkLinks",
-      "apiVersion": "2020-06-01",
-      "name": "[format('{0}/{1}', 'privatelink.file.core.windows.net', format('{0}storage-file-vnet-link', variables('name')))]",
+      "apiVersion": "2024-06-01",
+      "name": "[format('{0}/{1}', format('{0}storage-file-vnet-link', variables('name')), format('link_to_{0}', toLower(format('{0}vnet', variables('name')))))]",
       "location": "global",
       "properties": {
         "registrationEnabled": false,
@@ -306,13 +348,13 @@
         }
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Network/privateDnsZones', 'privatelink.file.core.windows.net')]",
+        "[resourceId('Microsoft.Network/privateDnsZones', format('{0}storage-file-vnet-link', variables('name')))]",
         "[resourceId('Microsoft.Network/virtualNetworks', format('{0}vnet', variables('name')))]"
       ]
     },
     {
       "type": "Microsoft.Network/privateEndpoints",
-      "apiVersion": "2023-11-01",
+      "apiVersion": "2024-07-01",
       "name": "[format('{0}kv-pe', variables('name'))]",
       "location": "[variables('location')]",
       "properties": {
@@ -338,7 +380,7 @@
     },
     {
       "type": "Microsoft.Network/privateEndpoints",
-      "apiVersion": "2023-11-01",
+      "apiVersion": "2024-07-01",
       "name": "[format('{0}acr-pe', variables('name'))]",
       "location": "[variables('location')]",
       "properties": {
@@ -364,7 +406,7 @@
     },
     {
       "type": "Microsoft.Network/privateEndpoints",
-      "apiVersion": "2023-11-01",
+      "apiVersion": "2024-07-01",
       "name": "[format('{0}aml-pe', variables('name'))]",
       "location": "[variables('location')]",
       "properties": {
@@ -393,7 +435,7 @@
     },
     {
       "type": "Microsoft.Network/privateEndpoints",
-      "apiVersion": "2023-11-01",
+      "apiVersion": "2024-07-01",
       "name": "[format('{0}storage-blob-pe', variables('name'))]",
       "location": "[variables('location')]",
       "properties": {
@@ -419,7 +461,7 @@
     },
     {
       "type": "Microsoft.Network/privateEndpoints",
-      "apiVersion": "2023-11-01",
+      "apiVersion": "2024-07-01",
       "name": "[format('{0}storage-file-pe', variables('name'))]",
       "location": "[variables('location')]",
       "properties": {
@@ -445,7 +487,7 @@
     },
     {
       "type": "Microsoft.Network/privateEndpoints/privateDnsZoneGroups",
-      "apiVersion": "2023-11-01",
+      "apiVersion": "2024-07-01",
       "name": "[format('{0}/{1}', format('{0}kv-pe', variables('name')), 'default')]",
       "properties": {
         "privateDnsZoneConfigs": [
@@ -464,7 +506,7 @@
     },
     {
       "type": "Microsoft.Network/privateEndpoints/privateDnsZoneGroups",
-      "apiVersion": "2023-11-01",
+      "apiVersion": "2024-07-01",
       "name": "[format('{0}/{1}', format('{0}acr-pe', variables('name')), 'default')]",
       "properties": {
         "privateDnsZoneConfigs": [
@@ -483,7 +525,7 @@
     },
     {
       "type": "Microsoft.Network/privateEndpoints/privateDnsZoneGroups",
-      "apiVersion": "2023-11-01",
+      "apiVersion": "2024-07-01",
       "name": "[format('{0}/{1}', format('{0}aml-pe', variables('name')), 'default')]",
       "properties": {
         "privateDnsZoneConfigs": [
@@ -509,39 +551,39 @@
     },
     {
       "type": "Microsoft.Network/privateEndpoints/privateDnsZoneGroups",
-      "apiVersion": "2023-11-01",
+      "apiVersion": "2024-07-01",
       "name": "[format('{0}/{1}', format('{0}storage-blob-pe', variables('name')), 'default')]",
       "properties": {
         "privateDnsZoneConfigs": [
           {
             "name": "privatelink-blob-core-windows-net",
             "properties": {
-              "privateDnsZoneId": "[resourceId('Microsoft.Network/privateDnsZones', 'privatelink.blob.core.windows.net')]"
+              "privateDnsZoneId": "[resourceId('Microsoft.Network/privateDnsZones', format('privatelink.blob.{0}', environment().suffixes.storage))]"
             }
           }
         ]
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Network/privateDnsZones', 'privatelink.blob.core.windows.net')]",
+        "[resourceId('Microsoft.Network/privateDnsZones', format('privatelink.blob.{0}', environment().suffixes.storage))]",
         "[resourceId('Microsoft.Network/privateEndpoints', format('{0}storage-blob-pe', variables('name')))]"
       ]
     },
     {
       "type": "Microsoft.Network/privateEndpoints/privateDnsZoneGroups",
-      "apiVersion": "2023-11-01",
+      "apiVersion": "2024-07-01",
       "name": "[format('{0}/{1}', format('{0}storage-file-pe', variables('name')), 'default')]",
       "properties": {
         "privateDnsZoneConfigs": [
           {
             "name": "privatelink-file-core-windows-net",
             "properties": {
-              "privateDnsZoneId": "[resourceId('Microsoft.Network/privateDnsZones', 'privatelink.file.core.windows.net')]"
+              "privateDnsZoneId": "[resourceId('Microsoft.Network/privateDnsZones', format('privatelink.file.{0}', environment().suffixes.storage))]"
             }
           }
         ]
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Network/privateDnsZones', 'privatelink.file.core.windows.net')]",
+        "[resourceId('Microsoft.Network/privateDnsZones', format('privatelink.file.{0}', environment().suffixes.storage))]",
         "[resourceId('Microsoft.Network/privateEndpoints', format('{0}storage-file-pe', variables('name')))]"
       ]
     },
@@ -552,7 +594,7 @@
       "name": "[guid(resourceId('Microsoft.MachineLearningServices/workspaces', format('{0}ws', variables('name'))), 'Contributor - UAMI')]",
       "properties": {
         "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'b24988ac-6180-42a0-ab88-20f7382dd24c')]",
-        "principalId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('{0}id', variables('name'))), '2023-07-31-preview').principalId]",
+        "principalId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('{0}id', variables('name'))), '2025-01-31-preview').principalId]",
         "principalType": "ServicePrincipal"
       },
       "dependsOn": [
@@ -567,7 +609,7 @@
       "name": "[guid(resourceId('Microsoft.MachineLearningServices/workspaces', format('{0}ws', variables('name'))), 'AzureML Compute Operator - UAMI')]",
       "properties": {
         "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'e503ece1-11d0-4e8e-8e2c-7a6c3bf38815')]",
-        "principalId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('{0}id', variables('name'))), '2023-07-31-preview').principalId]",
+        "principalId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('{0}id', variables('name'))), '2025-01-31-preview').principalId]",
         "principalType": "ServicePrincipal"
       },
       "dependsOn": [
@@ -582,7 +624,7 @@
       "name": "[guid(resourceId('Microsoft.MachineLearningServices/workspaces', format('{0}ws', variables('name'))), 'AzureML Data Scientist - UAMI')]",
       "properties": {
         "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'f6c7c914-8db3-469d-8ca1-694a8f32e121')]",
-        "principalId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('{0}id', variables('name'))), '2023-07-31-preview').principalId]",
+        "principalId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('{0}id', variables('name'))), '2025-01-31-preview').principalId]",
         "principalType": "ServicePrincipal"
       },
       "dependsOn": [
@@ -597,7 +639,7 @@
       "name": "[guid(resourceId('Microsoft.KeyVault/vaults', format('{0}kv', variables('name'))), 'Key Vault Administrator - UAMI')]",
       "properties": {
         "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '00482a5a-887f-4fb3-b363-3b7fe8e74483')]",
-        "principalId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('{0}id', variables('name'))), '2023-07-31-preview').principalId]",
+        "principalId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('{0}id', variables('name'))), '2025-01-31-preview').principalId]",
         "principalType": "ServicePrincipal"
       },
       "dependsOn": [
@@ -612,7 +654,7 @@
       "name": "[guid(resourceId('Microsoft.KeyVault/vaults', format('{0}kv', variables('name'))), 'Key Vault Contributor - UAMI')]",
       "properties": {
         "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'f25e0fa2-a7c8-4377-a976-54943a77a395')]",
-        "principalId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('{0}id', variables('name'))), '2023-07-31-preview').principalId]",
+        "principalId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('{0}id', variables('name'))), '2025-01-31-preview').principalId]",
         "principalType": "ServicePrincipal"
       },
       "dependsOn": [
@@ -627,7 +669,7 @@
       "name": "[guid(resourceId('Microsoft.ContainerRegistry/registries', format('{0}acr', variables('name'))), 'ACR Pull - UAMI')]",
       "properties": {
         "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '7f951dda-4ed3-4680-a7ca-43fe172d538d')]",
-        "principalId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('{0}id', variables('name'))), '2023-07-31-preview').principalId]",
+        "principalId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('{0}id', variables('name'))), '2025-01-31-preview').principalId]",
         "principalType": "ServicePrincipal"
       },
       "dependsOn": [
@@ -642,7 +684,7 @@
       "name": "[guid(resourceId('Microsoft.ContainerRegistry/registries', format('{0}acr', variables('name'))), 'ACR Push - UAMI')]",
       "properties": {
         "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '8311e382-0749-4cb8-b61a-304f252e45ec')]",
-        "principalId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('{0}id', variables('name'))), '2023-07-31-preview').principalId]",
+        "principalId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('{0}id', variables('name'))), '2025-01-31-preview').principalId]",
         "principalType": "ServicePrincipal"
       },
       "dependsOn": [
@@ -657,7 +699,7 @@
       "name": "[guid(resourceId('Microsoft.ContainerRegistry/registries', format('{0}acr', variables('name'))), 'ACR Repository Contributor - UAMI')]",
       "properties": {
         "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '2efddaa5-3f1f-4df3-97df-af3f13818f4c')]",
-        "principalId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('{0}id', variables('name'))), '2023-07-31-preview').principalId]",
+        "principalId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('{0}id', variables('name'))), '2025-01-31-preview').principalId]",
         "principalType": "ServicePrincipal"
       },
       "dependsOn": [
@@ -672,7 +714,7 @@
       "name": "[guid(resourceId('Microsoft.Insights/components', format('{0}ai', variables('name'))), 'App Insights Contributor - UAMI')]",
       "properties": {
         "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'ae349356-3a1b-4a5e-921d-050484c6347e')]",
-        "principalId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('{0}id', variables('name'))), '2023-07-31-preview').principalId]",
+        "principalId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('{0}id', variables('name'))), '2025-01-31-preview').principalId]",
         "principalType": "ServicePrincipal"
       },
       "dependsOn": [
@@ -687,7 +729,7 @@
       "name": "[guid(resourceId('Microsoft.Storage/storageAccounts', toLower(format('{0}sa', variables('name')))), 'Storage Account Contributor - UAMI')]",
       "properties": {
         "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '17d1049b-9a84-46fb-8f53-869881c3d3ab')]",
-        "principalId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('{0}id', variables('name'))), '2023-07-31-preview').principalId]",
+        "principalId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('{0}id', variables('name'))), '2025-01-31-preview').principalId]",
         "principalType": "ServicePrincipal"
       },
       "dependsOn": [
@@ -702,7 +744,7 @@
       "name": "[guid(resourceId('Microsoft.Storage/storageAccounts', toLower(format('{0}sa', variables('name')))), 'Storage Blob Data Contributor - UAMI')]",
       "properties": {
         "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'ba92f5b4-2d11-453d-a403-e96b0029c9fe')]",
-        "principalId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('{0}id', variables('name'))), '2023-07-31-preview').principalId]",
+        "principalId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('{0}id', variables('name'))), '2025-01-31-preview').principalId]",
         "principalType": "ServicePrincipal"
       },
       "dependsOn": [
@@ -717,7 +759,7 @@
       "name": "[guid(resourceId('Microsoft.OperationalInsights/workspaces', format('{0}law', variables('name'))), 'Log Analytics Contributor - UAMI')]",
       "properties": {
         "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '92aaf0da-9dab-42b6-94a3-d43ce8d16293')]",
-        "principalId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('{0}id', variables('name'))), '2023-07-31-preview').principalId]",
+        "principalId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('{0}id', variables('name'))), '2025-01-31-preview').principalId]",
         "principalType": "ServicePrincipal"
       },
       "dependsOn": [
