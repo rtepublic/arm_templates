@@ -8,12 +8,12 @@ var location = resourceGroup().location
 var name = resourcePrefix
 var userPrincipalId = az.deployer().objectId
 
-resource userAssignedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-07-31-preview' = {
+resource userAssignedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2025-01-31-preview' = {
   name: '${name}id'
   location: location
 }
 
-resource storageAccount 'Microsoft.Storage/storageAccounts@2023-05-01' = {
+resource storageAccount 'Microsoft.Storage/storageAccounts@2025-01-01' = {
   name: toLower('${name}sa')
   location: location
   sku: {
@@ -78,11 +78,7 @@ resource acr 'Microsoft.ContainerRegistry/registries@2023-11-01-preview' = {
   }
 }
 
-// API 2024-07-01-preview is required for the systemDatastoresAuthMode property. 
-// The latest API version "2024-10-01" doesn't seem to support it.
-// The 2024-10-01 API also doesn't seem to precreate datastores the way that 2024-07-01-preview does.
-
-resource mlWorkspace 'Microsoft.MachineLearningServices/workspaces@2024-07-01-preview' = {
+resource mlWorkspace 'Microsoft.MachineLearningServices/workspaces@2025-06-01' = {
   name: '${name}ws'
   location: location
   identity: {
