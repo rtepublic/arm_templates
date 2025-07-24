@@ -197,15 +197,9 @@ resource storagePrivateDnsZoneFile 'Microsoft.Network/privateDnsZones@2024-06-01
 // Private DNS Zone Virtual Network Links
 // -------------------
 
-resource keyVaultPrivateDnsZoneVnetLink 'Microsoft.Network/privateDnsZones@2024-06-01' = {
-  name: '${name}kv-vnet-link'
-  location: 'global'
-  properties: {}
-}
-
 resource keyVaultToVirtualNetwork 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2024-06-01' = {
   parent: keyVaultPrivateDnsZone
-  name: '${name}kv-vnet-link'
+  name: 'link-to-vnet'
   location: 'global'
   properties: {
     registrationEnabled: false
@@ -213,17 +207,11 @@ resource keyVaultToVirtualNetwork 'Microsoft.Network/privateDnsZones/virtualNetw
       id: vnet.id
     }
   }
-}
-
-resource acrPrivateDnsZoneVnetLink 'Microsoft.Network/privateDnsZones@2024-06-01' = {
-  name: '${name}acr-vnet-link'
-  location: 'global'
-  properties: {}
 }
 
 resource acrToVirtualNetwork 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2024-06-01' = {
   parent: acrPrivateDnsZone
-  name: '${name}acr-vnet-link'
+  name: 'link-to-vnet'
   location: 'global'
   properties: {
     registrationEnabled: false
@@ -231,17 +219,11 @@ resource acrToVirtualNetwork 'Microsoft.Network/privateDnsZones/virtualNetworkLi
       id: vnet.id
     }
   }
-}
-
-resource amlPrivateDnsZoneVnetLink 'Microsoft.Network/privateDnsZones@2024-06-01' = {
-  name: '${name}aml-vnet-link'
-  location: 'global'
-  properties: {}
 }
 
 resource amlToVirtualNetwork 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2024-06-01' = {
   parent: amlPrivateDnsZone
-  name: '${name}aml-vnet-link'
+  name: 'link-to-vnet'
   location: 'global'
   properties: {
     registrationEnabled: false
@@ -249,17 +231,11 @@ resource amlToVirtualNetwork 'Microsoft.Network/privateDnsZones/virtualNetworkLi
       id: vnet.id
     }
   }
-}
-
-resource amlNotebooksPrivateDnsZoneVnetLink 'Microsoft.Network/privateDnsZones@2024-06-01' = {
-  name: '${name}aml-notebooks-vnet-link'
-  location: 'global'
-  properties: {}
 }
 
 resource amlNotebooksToVirtualNetwork 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2024-06-01' = {
   parent: amlNotebooksPrivateDnsZone
-  name: '${name}aml-notebooks-vnet-link'
+  name: 'link-to-vnet'
   location: 'global'
   properties: {
     registrationEnabled: false
@@ -267,17 +243,11 @@ resource amlNotebooksToVirtualNetwork 'Microsoft.Network/privateDnsZones/virtual
       id: vnet.id
     }
   }
-}
-
-resource storagePrivateDnsZoneBlobVnetLink 'Microsoft.Network/privateDnsZones@2024-06-01' = {
-  name: '${name}storage-blob-vnet-link'
-  location: 'global'
-  properties: {}
 }
 
 resource blobStorageToVirtualNetwork 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2024-06-01' = {
   parent: storagePrivateDnsZoneBlob
-  name: '${name}storage-blob-vnet-link'
+  name: 'link-to-vnet'
   location: 'global'
   properties: {
     registrationEnabled: false
@@ -287,15 +257,9 @@ resource blobStorageToVirtualNetwork 'Microsoft.Network/privateDnsZones/virtualN
   }
 }
 
-resource storagePrivateDnsZoneFileVnetLink 'Microsoft.Network/privateDnsZones@2024-06-01' = {
-  name: '${name}storage-file-vnet-link'
-  location: 'global'
-  properties: {}
-}
-
 resource fileStorageToVirtualNetwork 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2024-06-01' = {
   parent: storagePrivateDnsZoneFile
-  name: '${name}storage-file-vnet-link'
+  name: 'link-to-vnet'
   location: 'global'
   properties: {
     registrationEnabled: false
