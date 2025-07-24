@@ -8,6 +8,49 @@ var location = resourceGroup().location
 var name = resourcePrefix
 var userPrincipalId = az.deployer().objectId
 
+// VNET and subnet configuration
+var vnetAddressPrefix = '10.0.0.0/16'
+var privateEndpointSubnetPrefix = '10.0.1.0/24'
+var computeSubnetPrefix = '10.0.2.0/24'
+
+// Create VNET with default outbound connections set to false
+resource vnet 'Microsoft.Network/virtualNetworks@2023-11-01' = {
+  name: '${name}vnet'
+  location: location
+  properties: {
+    addressSpace: {
+      addressPrefixes: [
+        vnetAddressPrefix
+      ]
+    }
+    enableDdosProtection: false
+    subnets: [
+      {
+        name: 'private-endpoints-subnet'
+        properties: {
+          addressPrefix: privateEndpointSubnetPrefix
+          privateEndpointNetworkPolicies: 'Disabled'
+          privateLinkServiceNetworkPolicies: 'Disabled'
+          defaultOutboundAccess: false
+        }
+      }
+      {
+        name: 'compute-subnet'
+        properties: {
+          addressPrefix: computeSubnetPrefix
+          defaultOutboundAccess: false
+        }
+      }
+    ]
+  }
+}
+
+// Reference to the private endpoints subnet
+resource privateEndpointSubnet 'Microsoft.Network/virtualNetworks/subnets@2023-11-01' existing = {
+  parent: vnet
+  name: 'private-endpoints-subnet'
+}
+
 resource userAssignedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-07-31-preview' = {
   name: '${name}id'
   location: location
@@ -34,6 +77,11 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2023-05-01' = {
     }
     supportsHttpsTrafficOnly: true
     allowSharedKeyAccess: false
+    publicNetworkAccess: 'Disabled'
+    networkAcls: {
+      defaultAction: 'Deny'
+      bypass: 'AzureServices'
+    }
   }
 }
 
@@ -49,6 +97,11 @@ resource keyVault 'Microsoft.KeyVault/vaults@2024-04-01-preview' = {
     enableSoftDelete: false
     enableRbacAuthorization: true
     accessPolicies: []
+    publicNetworkAccess: 'Disabled'
+    networkAcls: {
+      defaultAction: 'Deny'
+      bypass: 'AzureServices'
+    }
   }
 }
 
@@ -75,6 +128,8 @@ resource acr 'Microsoft.ContainerRegistry/registries@2023-11-01-preview' = {
   }
   properties: {
     adminUserEnabled: false
+    publicNetworkAccess: 'Disabled'
+    networkRuleBypassOptions: 'AzureServices'
   }
 }
 
@@ -100,6 +155,311 @@ resource mlWorkspace 'Microsoft.MachineLearningServices/workspaces@2024-07-01-pr
     applicationInsights: applicationInsights.id
     primaryUserAssignedIdentity: userAssignedIdentity.id
     systemDatastoresAuthMode: 'Identity'
+    publicNetworkAccess: 'Disabled'
+  }
+}
+
+// -------------------
+// Private DNS Zones
+// -------------------
+
+resource keyVaultPrivateDnsZone 'Microsoft.Network/privateDnsZones@2020-06-01' = {
+  name: 'privatelink.vaultcore.azure.net'
+  location: 'global'
+}
+
+resource acrPrivateDnsZone 'Microsoft.Network/privateDnsZones@2020-06-01' = {
+  name: 'privatelink.azurecr.io'
+  location: 'global'
+}
+
+resource amlPrivateDnsZone 'Microsoft.Network/privateDnsZones@2020-06-01' = {
+  name: 'privatelink.api.azureml.ms'
+  location: 'global'
+}
+
+resource amlNotebooksPrivateDnsZone 'Microsoft.Network/privateDnsZones@2020-06-01' = {
+  name: 'privatelink.notebooks.azure.net'
+  location: 'global'
+}
+
+resource storagePrivateDnsZoneBlob 'Microsoft.Network/privateDnsZones@2020-06-01' = {
+  name: 'privatelink.blob.core.windows.net'
+  location: 'global'
+}
+
+resource storagePrivateDnsZoneFile 'Microsoft.Network/privateDnsZones@2020-06-01' = {
+  name: 'privatelink.file.core.windows.net'
+  location: 'global'
+}
+
+// -------------------
+// Private DNS Zone Virtual Network Links
+// -------------------
+
+resource keyVaultPrivateDnsZoneVnetLink 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2020-06-01' = {
+  parent: keyVaultPrivateDnsZone
+  name: '${name}kv-vnet-link'
+  location: 'global'
+  properties: {
+    registrationEnabled: false
+    virtualNetwork: {
+      id: vnet.id
+    }
+  }
+}
+
+resource acrPrivateDnsZoneVnetLink 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2020-06-01' = {
+  parent: acrPrivateDnsZone
+  name: '${name}acr-vnet-link'
+  location: 'global'
+  properties: {
+    registrationEnabled: false
+    virtualNetwork: {
+      id: vnet.id
+    }
+  }
+}
+
+resource amlPrivateDnsZoneVnetLink 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2020-06-01' = {
+  parent: amlPrivateDnsZone
+  name: '${name}aml-vnet-link'
+  location: 'global'
+  properties: {
+    registrationEnabled: false
+    virtualNetwork: {
+      id: vnet.id
+    }
+  }
+}
+
+resource amlNotebooksPrivateDnsZoneVnetLink 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2020-06-01' = {
+  parent: amlNotebooksPrivateDnsZone
+  name: '${name}aml-notebooks-vnet-link'
+  location: 'global'
+  properties: {
+    registrationEnabled: false
+    virtualNetwork: {
+      id: vnet.id
+    }
+  }
+}
+
+resource storagePrivateDnsZoneBlobVnetLink 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2020-06-01' = {
+  parent: storagePrivateDnsZoneBlob
+  name: '${name}storage-blob-vnet-link'
+  location: 'global'
+  properties: {
+    registrationEnabled: false
+    virtualNetwork: {
+      id: vnet.id
+    }
+  }
+}
+
+resource storagePrivateDnsZoneFileVnetLink 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2020-06-01' = {
+  parent: storagePrivateDnsZoneFile
+  name: '${name}storage-file-vnet-link'
+  location: 'global'
+  properties: {
+    registrationEnabled: false
+    virtualNetwork: {
+      id: vnet.id
+    }
+  }
+}
+
+// -------------------
+// Private Endpoints
+// -------------------
+
+resource keyVaultPrivateEndpoint 'Microsoft.Network/privateEndpoints@2023-11-01' = {
+  name: '${name}kv-pe'
+  location: location
+  properties: {
+    subnet: {
+      id: privateEndpointSubnet.id
+    }
+    privateLinkServiceConnections: [
+      {
+        name: '${name}kv-pe-connection'
+        properties: {
+          privateLinkServiceId: keyVault.id
+          groupIds: [
+            'vault'
+          ]
+        }
+      }
+    ]
+  }
+}
+
+resource acrPrivateEndpoint 'Microsoft.Network/privateEndpoints@2023-11-01' = {
+  name: '${name}acr-pe'
+  location: location
+  properties: {
+    subnet: {
+      id: privateEndpointSubnet.id
+    }
+    privateLinkServiceConnections: [
+      {
+        name: '${name}acr-pe-connection'
+        properties: {
+          privateLinkServiceId: acr.id
+          groupIds: [
+            'registry'
+          ]
+        }
+      }
+    ]
+  }
+}
+
+resource amlPrivateEndpoint 'Microsoft.Network/privateEndpoints@2023-11-01' = {
+  name: '${name}aml-pe'
+  location: location
+  properties: {
+    subnet: {
+      id: privateEndpointSubnet.id
+    }
+    privateLinkServiceConnections: [
+      {
+        name: '${name}aml-pe-connection'
+        properties: {
+          privateLinkServiceId: mlWorkspace.id
+          groupIds: [
+            'amlworkspace'
+          ]
+        }
+      }
+    ]
+  }
+}
+
+resource storagePrivateEndpointBlob 'Microsoft.Network/privateEndpoints@2023-11-01' = {
+  name: '${name}storage-blob-pe'
+  location: location
+  properties: {
+    subnet: {
+      id: privateEndpointSubnet.id
+    }
+    privateLinkServiceConnections: [
+      {
+        name: '${name}storage-blob-pe-connection'
+        properties: {
+          privateLinkServiceId: storageAccount.id
+          groupIds: [
+            'blob'
+          ]
+        }
+      }
+    ]
+  }
+}
+
+resource storagePrivateEndpointFile 'Microsoft.Network/privateEndpoints@2023-11-01' = {
+  name: '${name}storage-file-pe'
+  location: location
+  properties: {
+    subnet: {
+      id: privateEndpointSubnet.id
+    }
+    privateLinkServiceConnections: [
+      {
+        name: '${name}storage-file-pe-connection'
+        properties: {
+          privateLinkServiceId: storageAccount.id
+          groupIds: [
+            'file'
+          ]
+        }
+      }
+    ]
+  }
+}
+
+// -------------------
+// Private DNS Zone Groups
+// -------------------
+
+resource keyVaultPrivateEndpointDnsGroup 'Microsoft.Network/privateEndpoints/privateDnsZoneGroups@2023-11-01' = {
+  parent: keyVaultPrivateEndpoint
+  name: 'default'
+  properties: {
+    privateDnsZoneConfigs: [
+      {
+        name: 'privatelink-vaultcore-azure-net'
+        properties: {
+          privateDnsZoneId: keyVaultPrivateDnsZone.id
+        }
+      }
+    ]
+  }
+}
+
+resource acrPrivateEndpointDnsGroup 'Microsoft.Network/privateEndpoints/privateDnsZoneGroups@2023-11-01' = {
+  parent: acrPrivateEndpoint
+  name: 'default'
+  properties: {
+    privateDnsZoneConfigs: [
+      {
+        name: 'privatelink-azurecr-io'
+        properties: {
+          privateDnsZoneId: acrPrivateDnsZone.id
+        }
+      }
+    ]
+  }
+}
+
+resource amlPrivateEndpointDnsGroup 'Microsoft.Network/privateEndpoints/privateDnsZoneGroups@2023-11-01' = {
+  parent: amlPrivateEndpoint
+  name: 'default'
+  properties: {
+    privateDnsZoneConfigs: [
+      {
+        name: 'privatelink-api-azureml-ms'
+        properties: {
+          privateDnsZoneId: amlPrivateDnsZone.id
+        }
+      }
+      {
+        name: 'privatelink-notebooks-azure-net'
+        properties: {
+          privateDnsZoneId: amlNotebooksPrivateDnsZone.id
+        }
+      }
+    ]
+  }
+}
+
+resource storagePrivateEndpointBlobDnsGroup 'Microsoft.Network/privateEndpoints/privateDnsZoneGroups@2023-11-01' = {
+  parent: storagePrivateEndpointBlob
+  name: 'default'
+  properties: {
+    privateDnsZoneConfigs: [
+      {
+        name: 'privatelink-blob-core-windows-net'
+        properties: {
+          privateDnsZoneId: storagePrivateDnsZoneBlob.id
+        }
+      }
+    ]
+  }
+}
+
+resource storagePrivateEndpointFileDnsGroup 'Microsoft.Network/privateEndpoints/privateDnsZoneGroups@2023-11-01' = {
+  parent: storagePrivateEndpointFile
+  name: 'default'
+  properties: {
+    privateDnsZoneConfigs: [
+      {
+        name: 'privatelink-file-core-windows-net'
+        properties: {
+          privateDnsZoneId: storagePrivateDnsZoneFile.id
+        }
+      }
+    ]
   }
 }
 
