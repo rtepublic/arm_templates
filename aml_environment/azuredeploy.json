@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.36.177.2456",
-      "templateHash": "15114177427480832125"
+      "templateHash": "8270130543289700788"
     }
   },
   "parameters": {
@@ -224,7 +224,7 @@
     {
       "type": "Microsoft.Network/privateDnsZones/virtualNetworkLinks",
       "apiVersion": "2024-06-01",
-      "name": "[format('{0}/{1}', 'privatelink.vaultcore.azure.net', format('link_to_{0}', toLower(format('{0}vnet', variables('name')))))]",
+      "name": "[format('{0}/{1}', 'privatelink.vaultcore.azure.net', format('{0}kv-vnet-link', variables('name')))]",
       "location": "global",
       "properties": {
         "registrationEnabled": false,
@@ -247,7 +247,7 @@
     {
       "type": "Microsoft.Network/privateDnsZones/virtualNetworkLinks",
       "apiVersion": "2024-06-01",
-      "name": "[format('{0}/{1}', format('{0}acr-vnet-link', variables('name')), format('link_to_{0}', toLower(format('{0}vnet', variables('name')))))]",
+      "name": "[format('{0}/{1}', 'privatelink.azurecr.io', format('{0}acr-vnet-link', variables('name')))]",
       "location": "global",
       "properties": {
         "registrationEnabled": false,
@@ -256,7 +256,7 @@
         }
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Network/privateDnsZones', format('{0}acr-vnet-link', variables('name')))]",
+        "[resourceId('Microsoft.Network/privateDnsZones', 'privatelink.azurecr.io')]",
         "[resourceId('Microsoft.Network/virtualNetworks', format('{0}vnet', variables('name')))]"
       ]
     },
@@ -270,7 +270,7 @@
     {
       "type": "Microsoft.Network/privateDnsZones/virtualNetworkLinks",
       "apiVersion": "2024-06-01",
-      "name": "[format('{0}/{1}', format('{0}aml-vnet-link', variables('name')), format('link_to_{0}', toLower(format('{0}vnet', variables('name')))))]",
+      "name": "[format('{0}/{1}', 'privatelink.api.azureml.ms', format('{0}aml-vnet-link', variables('name')))]",
       "location": "global",
       "properties": {
         "registrationEnabled": false,
@@ -279,7 +279,7 @@
         }
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Network/privateDnsZones', format('{0}aml-vnet-link', variables('name')))]",
+        "[resourceId('Microsoft.Network/privateDnsZones', 'privatelink.api.azureml.ms')]",
         "[resourceId('Microsoft.Network/virtualNetworks', format('{0}vnet', variables('name')))]"
       ]
     },
@@ -293,7 +293,7 @@
     {
       "type": "Microsoft.Network/privateDnsZones/virtualNetworkLinks",
       "apiVersion": "2024-06-01",
-      "name": "[format('{0}/{1}', format('{0}aml-notebooks-vnet-link', variables('name')), format('link_to_{0}', toLower(format('{0}vnet', variables('name')))))]",
+      "name": "[format('{0}/{1}', 'privatelink.notebooks.azure.net', format('{0}aml-notebooks-vnet-link', variables('name')))]",
       "location": "global",
       "properties": {
         "registrationEnabled": false,
@@ -302,7 +302,7 @@
         }
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Network/privateDnsZones', format('{0}aml-notebooks-vnet-link', variables('name')))]",
+        "[resourceId('Microsoft.Network/privateDnsZones', 'privatelink.notebooks.azure.net')]",
         "[resourceId('Microsoft.Network/virtualNetworks', format('{0}vnet', variables('name')))]"
       ]
     },
@@ -316,7 +316,7 @@
     {
       "type": "Microsoft.Network/privateDnsZones/virtualNetworkLinks",
       "apiVersion": "2024-06-01",
-      "name": "[format('{0}/{1}', format('{0}storage-blob-vnet-link', variables('name')), format('link_to_{0}', toLower(format('{0}vnet', variables('name')))))]",
+      "name": "[format('{0}/{1}', format('privatelink.blob.{0}', environment().suffixes.storage), format('{0}storage-blob-vnet-link', variables('name')))]",
       "location": "global",
       "properties": {
         "registrationEnabled": false,
@@ -325,7 +325,7 @@
         }
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Network/privateDnsZones', format('{0}storage-blob-vnet-link', variables('name')))]",
+        "[resourceId('Microsoft.Network/privateDnsZones', format('privatelink.blob.{0}', environment().suffixes.storage))]",
         "[resourceId('Microsoft.Network/virtualNetworks', format('{0}vnet', variables('name')))]"
       ]
     },
@@ -339,7 +339,7 @@
     {
       "type": "Microsoft.Network/privateDnsZones/virtualNetworkLinks",
       "apiVersion": "2024-06-01",
-      "name": "[format('{0}/{1}', format('{0}storage-file-vnet-link', variables('name')), format('link_to_{0}', toLower(format('{0}vnet', variables('name')))))]",
+      "name": "[format('{0}/{1}', format('privatelink.file.{0}', environment().suffixes.storage), format('{0}storage-file-vnet-link', variables('name')))]",
       "location": "global",
       "properties": {
         "registrationEnabled": false,
@@ -348,7 +348,7 @@
         }
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Network/privateDnsZones', format('{0}storage-file-vnet-link', variables('name')))]",
+        "[resourceId('Microsoft.Network/privateDnsZones', format('privatelink.file.{0}', environment().suffixes.storage))]",
         "[resourceId('Microsoft.Network/virtualNetworks', format('{0}vnet', variables('name')))]"
       ]
     },
