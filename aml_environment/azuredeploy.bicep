@@ -318,6 +318,12 @@ resource acrPrivateEndpoint 'Microsoft.Network/privateEndpoints@2023-11-01' = {
 resource amlPrivateEndpoint 'Microsoft.Network/privateEndpoints@2023-11-01' = {
   name: '${name}aml-pe'
   location: location
+  dependsOn: [
+    mlWorkspace
+    roleWorkspaceContributorUAMI
+    roleAzureMLComputeOperatorUAMI
+    roleAzureMLDataScientistUAMI
+  ]
   properties: {
     subnet: {
       id: privateEndpointSubnet.id
