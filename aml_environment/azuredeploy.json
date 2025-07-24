@@ -4,8 +4,8 @@
   "metadata": {
     "_generator": {
       "name": "bicep",
-      "version": "0.36.1.42791",
-      "templateHash": "7509610668171529181"
+      "version": "0.36.177.2456",
+      "templateHash": "14493204001098843178"
     }
   },
   "parameters": {
@@ -140,7 +140,7 @@
       "name": "[format('{0}acr', variables('name'))]",
       "location": "[variables('location')]",
       "sku": {
-        "name": "Basic"
+        "name": "Premium"
       },
       "properties": {
         "adminUserEnabled": false,
