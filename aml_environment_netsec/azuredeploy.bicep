@@ -629,3 +629,22 @@ resource roleStorageTableDataContributorUser 'Microsoft.Authorization/roleAssign
   }
 }
 
+resource roleLogAnalyticsReaderUser 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  scope: logAnalyticsWorkspace
+  name: guid(logAnalyticsWorkspace.id, 'Log Analytics Reader - User')
+  properties: {
+    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '73c42c96-874c-492b-b04d-ab87d138a893')
+    principalId: userPrincipalId
+    principalType: 'User'
+  }
+}
+
+resource roleAppInsightsComponentContributorUser 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  scope: applicationInsights
+  name: guid(applicationInsights.id, 'Application Insights Component Contributor - User')
+  properties: {
+    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'ae349356-3a1b-4a5e-921d-050484c6347e')
+    principalId: userPrincipalId
+    principalType: 'User'
+  }
+}
