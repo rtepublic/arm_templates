@@ -142,6 +142,7 @@ resource mlWorkspace 'Microsoft.MachineLearningServices/workspaces@2025-06-01' =
   location: location
   dependsOn: [
     roleKeyVaultAdminUAMI
+    roleKeyVaultContributorUAMI
     roleStorageContributorUAMI
     roleStorageBlobDataContributorUAMI
   ]
@@ -560,11 +561,21 @@ resource roleLogAnalyticsContributorUAMI 'Microsoft.Authorization/roleAssignment
   }
 }
 
-resource roleKeyVaultSecretsOfficerUAMI 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  scope: keyVault
-  name: guid(keyVault.id, 'Key Vault Secrets Officer - UAMI')
+resource roleAzureMLComputeOperatorUAMI 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  scope: mlWorkspace
+  name: guid(mlWorkspace.id, 'AzureML Compute Operator - UAMI')
   properties: {
-    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'b86a8fe4-44ce-4948-aee5-eccb2c155cd7')
+    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'e503ece1-11d0-4e8e-8e2c-7a6c3bf38815')
+    principalId: userAssignedIdentity.properties.principalId
+    principalType: 'ServicePrincipal'
+  }
+}
+
+resource roleKeyVaultContributorUAMI 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  scope: keyVault
+  name: guid(keyVault.id, 'Key Vault Contributor - UAMI')
+  properties: {
+    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'f25e0fa2-a7c8-4377-a976-54943a77a395')
     principalId: userAssignedIdentity.properties.principalId
     principalType: 'ServicePrincipal'
   }
