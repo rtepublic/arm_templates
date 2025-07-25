@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.36.177.2456",
-      "templateHash": "5336769777558631062"
+      "templateHash": "6584829450923943309"
     }
   },
   "parameters": {
@@ -667,6 +667,21 @@
       },
       "dependsOn": [
         "[resourceId('Microsoft.OperationalInsights/workspaces', format('{0}law', variables('name')))]",
+        "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('{0}id', variables('name')))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Authorization/roleAssignments",
+      "apiVersion": "2022-04-01",
+      "scope": "[format('Microsoft.KeyVault/vaults/{0}', format('{0}kv', variables('name')))]",
+      "name": "[guid(resourceId('Microsoft.KeyVault/vaults', format('{0}kv', variables('name'))), 'Key Vault Secrets Officer - UAMI')]",
+      "properties": {
+        "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'b86a8fe4-44ce-4948-aee5-eccb2c155cd7')]",
+        "principalId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('{0}id', variables('name'))), '2025-01-31-preview').principalId]",
+        "principalType": "ServicePrincipal"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.KeyVault/vaults', format('{0}kv', variables('name')))]",
         "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('{0}id', variables('name')))]"
       ]
     },

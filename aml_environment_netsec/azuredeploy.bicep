@@ -560,6 +560,16 @@ resource roleLogAnalyticsContributorUAMI 'Microsoft.Authorization/roleAssignment
   }
 }
 
+resource roleKeyVaultSecretsOfficerUAMI 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  scope: keyVault
+  name: guid(keyVault.id, 'Key Vault Secrets Officer - UAMI')
+  properties: {
+    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'b86a8fe4-44ce-4948-aee5-eccb2c155cd7')
+    principalId: userAssignedIdentity.properties.principalId
+    principalType: 'ServicePrincipal'
+  }
+}
+
 // -------------------
 // User (deployer) role assignments
 // ------------------
