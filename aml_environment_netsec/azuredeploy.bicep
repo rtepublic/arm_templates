@@ -140,6 +140,11 @@ resource acr 'Microsoft.ContainerRegistry/registries@2023-11-01-preview' = {
 resource mlWorkspace 'Microsoft.MachineLearningServices/workspaces@2025-06-01' = {
   name: '${name}ws'
   location: location
+  dependsOn: [
+    roleKeyVaultAdminUAMI
+    roleStorageContributorUAMI
+    roleStorageBlobDataContributorUAMI
+  ]
   identity: {
     type: 'UserAssigned'
     userAssignedIdentities: {

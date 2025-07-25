@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.36.177.2456",
-      "templateHash": "7878719202194541195"
+      "templateHash": "5336769777558631062"
     }
   },
   "parameters": {
@@ -174,6 +174,9 @@
         "[resourceId('Microsoft.ContainerRegistry/registries', format('{0}acr', variables('name')))]",
         "[resourceId('Microsoft.Insights/components', format('{0}ai', variables('name')))]",
         "[resourceId('Microsoft.KeyVault/vaults', format('{0}kv', variables('name')))]",
+        "[extensionResourceId(resourceId('Microsoft.KeyVault/vaults', format('{0}kv', variables('name'))), 'Microsoft.Authorization/roleAssignments', guid(resourceId('Microsoft.KeyVault/vaults', format('{0}kv', variables('name'))), 'Key Vault Administrator - UAMI'))]",
+        "[extensionResourceId(resourceId('Microsoft.Storage/storageAccounts', toLower(format('{0}sa', variables('name')))), 'Microsoft.Authorization/roleAssignments', guid(resourceId('Microsoft.Storage/storageAccounts', toLower(format('{0}sa', variables('name')))), 'Storage Blob Data Contributor - UAMI'))]",
+        "[extensionResourceId(resourceId('Microsoft.Storage/storageAccounts', toLower(format('{0}sa', variables('name')))), 'Microsoft.Authorization/roleAssignments', guid(resourceId('Microsoft.Storage/storageAccounts', toLower(format('{0}sa', variables('name')))), 'Storage Account Contributor - UAMI'))]",
         "[resourceId('Microsoft.Storage/storageAccounts', toLower(format('{0}sa', variables('name'))))]",
         "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('{0}id', variables('name')))]"
       ]
