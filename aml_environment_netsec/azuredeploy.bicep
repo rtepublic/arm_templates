@@ -143,6 +143,7 @@ resource mlWorkspace 'Microsoft.MachineLearningServices/workspaces@2025-06-01' =
   dependsOn: [
     roleKeyVaultAdminUAMI
     roleKeyVaultContributorUAMI
+    roleResourceGroupContributorUAMI
     roleStorageContributorUAMI
     roleStorageBlobDataContributorUAMI
   ]
@@ -576,6 +577,16 @@ resource roleKeyVaultContributorUAMI 'Microsoft.Authorization/roleAssignments@20
   name: guid(keyVault.id, 'Key Vault Contributor - UAMI')
   properties: {
     roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'f25e0fa2-a7c8-4377-a976-54943a77a395')
+    principalId: userAssignedIdentity.properties.principalId
+    principalType: 'ServicePrincipal'
+  }
+}
+
+resource roleResourceGroupContributorUAMI 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  scope: resourceGroup()
+  name: guid(resourceGroup().id, userAssignedIdentity.id, 'Resource Group Contributor - UAMI')
+  properties: {
+    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'b24988ac-6180-42a0-ab88-20f7382dd24c')
     principalId: userAssignedIdentity.properties.principalId
     principalType: 'ServicePrincipal'
   }

@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.36.177.2456",
-      "templateHash": "8978123450386873955"
+      "templateHash": "6804090441989035226"
     }
   },
   "parameters": {
@@ -176,6 +176,7 @@
         "[resourceId('Microsoft.KeyVault/vaults', format('{0}kv', variables('name')))]",
         "[extensionResourceId(resourceId('Microsoft.KeyVault/vaults', format('{0}kv', variables('name'))), 'Microsoft.Authorization/roleAssignments', guid(resourceId('Microsoft.KeyVault/vaults', format('{0}kv', variables('name'))), 'Key Vault Administrator - UAMI'))]",
         "[extensionResourceId(resourceId('Microsoft.KeyVault/vaults', format('{0}kv', variables('name'))), 'Microsoft.Authorization/roleAssignments', guid(resourceId('Microsoft.KeyVault/vaults', format('{0}kv', variables('name'))), 'Key Vault Contributor - UAMI'))]",
+        "[resourceId('Microsoft.Authorization/roleAssignments', guid(resourceGroup().id, resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('{0}id', variables('name'))), 'Resource Group Contributor - UAMI'))]",
         "[extensionResourceId(resourceId('Microsoft.Storage/storageAccounts', toLower(format('{0}sa', variables('name')))), 'Microsoft.Authorization/roleAssignments', guid(resourceId('Microsoft.Storage/storageAccounts', toLower(format('{0}sa', variables('name')))), 'Storage Blob Data Contributor - UAMI'))]",
         "[extensionResourceId(resourceId('Microsoft.Storage/storageAccounts', toLower(format('{0}sa', variables('name')))), 'Microsoft.Authorization/roleAssignments', guid(resourceId('Microsoft.Storage/storageAccounts', toLower(format('{0}sa', variables('name')))), 'Storage Account Contributor - UAMI'))]",
         "[resourceId('Microsoft.Storage/storageAccounts', toLower(format('{0}sa', variables('name'))))]",
@@ -698,6 +699,19 @@
       },
       "dependsOn": [
         "[resourceId('Microsoft.KeyVault/vaults', format('{0}kv', variables('name')))]",
+        "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('{0}id', variables('name')))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Authorization/roleAssignments",
+      "apiVersion": "2022-04-01",
+      "name": "[guid(resourceGroup().id, resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('{0}id', variables('name'))), 'Resource Group Contributor - UAMI')]",
+      "properties": {
+        "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'b24988ac-6180-42a0-ab88-20f7382dd24c')]",
+        "principalId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('{0}id', variables('name'))), '2025-01-31-preview').principalId]",
+        "principalType": "ServicePrincipal"
+      },
+      "dependsOn": [
         "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('{0}id', variables('name')))]"
       ]
     },
