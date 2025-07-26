@@ -597,6 +597,16 @@ resource roleWorkspaceContributorUAMI 'Microsoft.Authorization/roleAssignments@2
   }
 }
 
+resource roleAcrRepositoryContributorUAMI 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  scope: acr
+  name: guid(acr.id, 'ACR Repository Contributor - UAMI')
+  properties: {
+    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '2efddaa5-3f1f-4df3-97df-af3f13818f4c')
+    principalId: userAssignedIdentity.properties.principalId
+    principalType: 'ServicePrincipal'
+  }
+}
+
 // -------------------
 // User (deployer) role assignments
 // ------------------

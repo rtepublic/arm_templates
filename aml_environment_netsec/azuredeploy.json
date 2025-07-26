@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.36.177.2456",
-      "templateHash": "18152374186266295336"
+      "templateHash": "7960601427857558105"
     }
   },
   "parameters": {
@@ -724,6 +724,21 @@
       },
       "dependsOn": [
         "[resourceId('Microsoft.MachineLearningServices/workspaces', format('{0}ws', variables('name')))]",
+        "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('{0}id', variables('name')))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Authorization/roleAssignments",
+      "apiVersion": "2022-04-01",
+      "scope": "[format('Microsoft.ContainerRegistry/registries/{0}', format('{0}acr', variables('name')))]",
+      "name": "[guid(resourceId('Microsoft.ContainerRegistry/registries', format('{0}acr', variables('name'))), 'ACR Repository Contributor - UAMI')]",
+      "properties": {
+        "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '2efddaa5-3f1f-4df3-97df-af3f13818f4c')]",
+        "principalId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('{0}id', variables('name'))), '2025-01-31-preview').principalId]",
+        "principalType": "ServicePrincipal"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.ContainerRegistry/registries', format('{0}acr', variables('name')))]",
         "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('{0}id', variables('name')))]"
       ]
     },
