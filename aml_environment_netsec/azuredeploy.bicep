@@ -577,16 +577,6 @@ resource roleKeyVaultContributorUAMI 'Microsoft.Authorization/roleAssignments@20
   }
 }
 
-resource roleResourceGroupContributorUAMI 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  scope: resourceGroup()
-  name: guid(resourceGroup().id, userAssignedIdentity.id, 'Resource Group Contributor - UAMI')
-  properties: {
-    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'b24988ac-6180-42a0-ab88-20f7382dd24c')
-    principalId: userAssignedIdentity.properties.principalId
-    principalType: 'ServicePrincipal'
-  }
-}
-
 resource roleWorkspaceContributorUAMI 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
   scope: mlWorkspace
   name: guid(mlWorkspace.id, 'Contributor - UAMI')
