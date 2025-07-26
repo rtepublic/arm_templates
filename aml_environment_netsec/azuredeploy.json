@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.36.177.2456",
-      "templateHash": "11362240758001511724"
+      "templateHash": "8865877670205461396"
     }
   },
   "parameters": {
@@ -386,6 +386,12 @@
       },
       "dependsOn": [
         "[resourceId('Microsoft.MachineLearningServices/workspaces', format('{0}ws', variables('name')))]",
+        "[extensionResourceId(resourceId('Microsoft.MachineLearningServices/workspaces', format('{0}ws', variables('name'))), 'Microsoft.Authorization/roleAssignments', guid(resourceId('Microsoft.MachineLearningServices/workspaces', format('{0}ws', variables('name'))), 'AzureML Compute Operator - UAMI'))]",
+        "[extensionResourceId(resourceId('Microsoft.MachineLearningServices/workspaces', format('{0}ws', variables('name'))), 'Microsoft.Authorization/roleAssignments', guid(resourceId('Microsoft.MachineLearningServices/workspaces', format('{0}ws', variables('name'))), 'AzureML Data Scientist - UAMI'))]",
+        "[extensionResourceId(resourceId('Microsoft.KeyVault/vaults', format('{0}kv', variables('name'))), 'Microsoft.Authorization/roleAssignments', guid(resourceId('Microsoft.KeyVault/vaults', format('{0}kv', variables('name'))), 'Key Vault Administrator - UAMI'))]",
+        "[extensionResourceId(resourceId('Microsoft.Storage/storageAccounts', toLower(format('{0}sa', variables('name')))), 'Microsoft.Authorization/roleAssignments', guid(resourceId('Microsoft.Storage/storageAccounts', toLower(format('{0}sa', variables('name')))), 'Storage Blob Data Contributor - UAMI'))]",
+        "[extensionResourceId(resourceId('Microsoft.Storage/storageAccounts', toLower(format('{0}sa', variables('name')))), 'Microsoft.Authorization/roleAssignments', guid(resourceId('Microsoft.Storage/storageAccounts', toLower(format('{0}sa', variables('name')))), 'Storage Account Contributor - UAMI'))]",
+        "[extensionResourceId(resourceId('Microsoft.MachineLearningServices/workspaces', format('{0}ws', variables('name'))), 'Microsoft.Authorization/roleAssignments', guid(resourceId('Microsoft.MachineLearningServices/workspaces', format('{0}ws', variables('name'))), 'Contributor - UAMI'))]",
         "[resourceId('Microsoft.Network/virtualNetworks', format('{0}vnet', variables('name')))]"
       ]
     },
